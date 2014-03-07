@@ -33,14 +33,15 @@ App.LastCommitRoute = Ember.Route.extend({
   model: function() {return {}},
   setupController: function(controller, model) {
     //search git
-    $.get(SEARCH, function(data) {
-      var repo_name = data.items[0].full_name
+    $.get(SEARCH).then(function(data) {
+      return data.items[0].full_name
+    }).then(function(repo_name) {
       repo_url = BASE + "/repos/" + repo_name + "/commits"
-      $.get(repo_url, function(commits) 
-      {
-        controller.set('model', commits[0])
-      });  
+      return $.get(repo_url)
+    }).then(function(commits) {
+      controller.set('model', commits[0])
     })
+
   },
   actions: {
     submit: function() {alert('hi')
