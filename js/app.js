@@ -3,7 +3,7 @@ var EMBER_REPO = "/emberjs/ember.js"
 var REPO = BASE + "/repos" + EMBER_REPO
 var COLLABS = REPO + "/collaborators"
 var COMMIT = REPO + "/commits"
-var SEARCH = BASE + "/search/repositories?q=ember"
+var SEARCH = BASE + "/search/repositories?q="
 
 App = Ember.Application.create();
 
@@ -30,24 +30,35 @@ App.IndexRoute = Ember.Route.extend({
 });
 
 App.LastCommitRoute = Ember.Route.extend({
-  model: function() {return {}},
-  setupController: function(controller, model) {
-    //search git
-    $.get(SEARCH).then(function(data) {
-      return data.items[0].full_name
+  model: function() {
+     return App.LastCommit.find("ba");
+  }
+});
+
+App.LastCommit = Ember.Object.extend({
+  sha: "Loading...",
+  repo: null,
+  load: function(query) {
+    _this = this ;
+  $.get(SEARCH + query).then(function(data) {
+      _this.set('repo', data.items[0].full_name)
+      return _this.repo;
     }).then(function(repo_name) {
       repo_url = BASE + "/repos/" + repo_name + "/commits"
       return $.get(repo_url)
     }).then(function(commits) {
-      controller.set('model', commits[0])
+      _this.setProperties(commits[0]);
     })
-
-  },
-  actions: {
-    submit: function() {alert('hi')
-    return false}
   }
 });
+
+App.LastCommit.reopenClass({
+  find: function(query) {
+    var last_commit = App.LastCommit.create();
+    last_commit.load(query);
+    return last_commit;
+  }
+})
 
 LastCommitController = Ember.ObjectController.extend({});
 
